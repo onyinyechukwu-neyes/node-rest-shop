@@ -1,34 +1,33 @@
 const express = require("express");
-const app = express();
 const bodyParser = require("body-parser");
-const moongoose = require("mongoose");
 
+const cors = require("cors");
 //Routes
 const productRoutes = require("./api/routes/products");
 const orderRoutes = require("./api/routes/orders");
-//Connect to DB
-moongoose.connect(
-  "mongodb+srv://node-rest-shop:" + process.env.DB_CONNECTION +"@node-rest-shop-3ytd8.mongodb.net/test?retryWrites=true&w=majority",
-  {
-    useNewUrlParser: true
-  },
-  () => {
-    console.log("Connected to DB!");
-  }
-);
+require("./db");
 
-app.use(bodyParser.urlencoded({ extended: false }));
+const app = express();
+
+//MIDDLEWARES
+app.use(cors());
+
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Header",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-});
+app.use(bodyParser.urlencoded({ extended: true }));
 
 //Routes which should handle request
-app.use("/products", productRoutes);
-app.use("/orders", orderRoutes);
+app.use(productRoutes);
+app.use(orderRoutes);
 
+//CORS Middleware
+app.use((req, res, next) => {
+  //Enabling CORS
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, contentType,Content-Type, Accept, Authorization"
+  );
+  next();
+});
 module.exports = app;
